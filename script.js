@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const userInput = document.getElementById('user-input');
     const chatBox = document.getElementById('chat-box');
 
+    // Cargar conversación previa del Local Storage
+    loadConversation();
+
     form.addEventListener('submit', function (event) {
         event.preventDefault(); // Prevenir recarga de página
 
@@ -26,47 +29,62 @@ document.addEventListener('DOMContentLoaded', function () {
     // Función para agregar un mensaje al chat (usuario o bot)
     function addMessageToChat(sender, message) {
         const messageElement = document.createElement('div');
-        messageElement.className = sender === 'user' ? 'user-message' : 'bot-message'; // Corrige el error de sintaxis
+        messageElement.className = sender === 'user' ? 'user-message' : 'bot-message';
         messageElement.textContent = message;
         chatBox.appendChild(messageElement);
         chatBox.scrollTop = chatBox.scrollHeight; // Desplazar el chat hacia abajo
+
+        // Guardar la conversación en Local Storage
+        saveConversation(sender, message);
+    }
+
+    // Función para guardar la conversación en Local Storage
+    function saveConversation(sender, message) {
+        const conversation = JSON.parse(localStorage.getItem('chatConversation')) || [];
+        conversation.push({ sender, message });
+        localStorage.setItem('chatConversation', JSON.stringify(conversation));
+    }
+
+    // Función para cargar la conversación previa desde Local Storage
+    function loadConversation() {
+        const savedConversation = JSON.parse(localStorage.getItem('chatConversation')) || [];
+        savedConversation.forEach(({ sender, message }) => {
+            addMessageToChat(sender, message);
+        });
     }
 
     // Función para generar la respuesta del bot
     function getBotResponse(input) {
-        input = input.toLowerCase();
+        const responses = {
+            'hola': '¡Hola! ¿Cómo te sientes hoy? Estoy aquí para escucharte.',
+            'adiós': 'Hasta luego, cuídate mucho. Recuerda que siempre puedes volver a hablar conmigo.',
+            'okey': '¡Perfecto! Estoy aquí si necesitas algo más.',
+            'bien': '¡Me alegra saber que estás bien! Si en algún momento quieres hablar o compartir algo, aquí estoy.',
+            'ansiedad': 'La ansiedad puede ser difícil. Intenta respirar profundamente y enfocarte en el presente. ¿Te gustaría hablar sobre lo que te causa ansiedad?',
+            'cansado': 'El cansancio puede ser agotador. Intenta descansar y recargar energías.',
+            'mal': 'Tranquilo, solo es un día malo, no una vida mala. ¿Por qué te sientes así?',
+            'depresión': 'Si sientes depresión, es importante hablar con alguien de confianza. Intenta hacer algo que te guste, como escuchar música o salir a caminar. ¿Te gustaría hablar más sobre ello?',
+            'triste': 'Lamento que te sientas triste. A veces es útil hablar sobre lo que nos molesta. ¿Quieres compartir más sobre cómo te sientes?',
+            'estrés': 'El estrés es algo que todos enfrentamos. Practicar ejercicios de respiración o meditación puede ayudar. ¿Quieres saber más sobre cómo manejarlo?',
+            'feliz': '¡Me alegra escuchar que estás feliz! Comparte qué te hace sentir así, tal vez pueda ayudarte a mantener esa alegría.',
+            'como te llamas': 'Soy Dakka, tu asistente virtual. ¿Cómo te puedo ayudar hoy?',
+            'sí': 'Perfecto, ¿qué te gustaría discutir más en detalle?',
+            'que son las emociones': 'Las emociones son respuestas psicológicas y fisiológicas a situaciones que vivimos. Nos permiten identificar lo que sentimos y guiar nuestro comportamiento.',
+            'para que sirven las emociones': 'Las emociones sirven para comunicarnos, adaptarnos a situaciones y tomar decisiones.',
+            'por que es necesario estar bien emocionalmente': 'Estar bien emocionalmente es necesario para la salud física, relaciones saludables, manejo del estrés y calidad de vida.',
+            'no': 'Entiendo, si cambias de opinión, estaré aquí para escucharte.',
+        };
 
-        // Respuestas básicas basadas en el input
-        if (input.includes('hola')) {
-            return '¡Hola! ¿Cómo te sientes hoy? Estoy aquí para escucharte.';
-        } else if (input.includes('adiós') || input.includes('chao') || input.includes('bye')) {
-            return 'Hasta luego, cuídate mucho. Recuerda que siempre puedes volver a hablar conmigo.';
-        } else if (input.includes('okey') || input.includes('ok')) {
-            return '¡Perfecto! Estoy aquí si necesitas algo más.';
-        } else if (input.includes('bien')) {
-            return '¡Me alegra saber que estás bien! Si en algún momento quieres hablar o compartir algo, aquí estoy.';
-        } else if (input.includes('ansiedad')) {
-            return 'La ansiedad puede ser difícil. Intenta respirar profundamente y enfocarte en el presente. ¿Te gustaría hablar sobre lo que te causa ansiedad?';
-        } else if (input.includes('cansado')) {
-            return 'El cansancio puede ser difícil. Intenta descansar y recargar energías.';
-        } else if (input.includes('mal')) {
-            return 'tranquilo, solo es un dia malo no una vida mala ¿por que te sientes asi?';
-        } else if (input.includes('depresión')) {
-            return 'Si sientes depresión, es importante hablar con alguien de confianza. Intenta hacer algo que te guste, como escuchar música o salir a caminar. ¿Te gustaría hablar más sobre ello?';
-        } else if (input.includes('triste')) {
-            return 'La tristeza puede ser difícil. Intenta respirar profundamente y enfocarte en el presente. ¿Te gustaría hablar sobre lo que te causa la tristeza?';
-        } else if (input.includes('estrés')) {
-            return 'El estrés es algo que todos enfrentamos. Practicar ejercicios de respiración o meditación puede ayudar. ¿Quieres saber más sobre cómo manejarlo?';
-        } else if (input.includes('feliz')) {
-            return '¡Me alegra escuchar que estás feliz! Comparte qué te hace sentir así, tal vez pueda ayudarte a mantener esa alegría.';
-        } else if (input.includes('triste')) {
-            return 'Lamento que te sientas triste. A veces es útil hablar sobre lo que nos molesta. ¿Quieres compartir más sobre cómo te sientes?';
-        } else if (input.includes('sí') || input.includes('si')) {
-            return 'Perfecto, ¿qué te gustaría discutir más en detalle?';
-        } else if (input.includes('no')) {
-            return 'Entiendo, si cambias de opinión, estaré aquí para escucharte.';
-        } else {
-            return 'No estoy seguro de entender. ¿Puedes contarme más sobre lo que sientes?'; // Respuesta por defecto
+        // Normalizar el input a minúsculas para la búsqueda
+        const normalizedInput = input.toLowerCase();
+
+        // Buscar la respuesta en el objeto de respuestas
+        for (let key in responses) {
+            if (normalizedInput.includes(key)) {
+                return responses[key];
+            }
         }
+
+        return 'debido a que soy un chatbot y estoy programado, no puedo entender lo que me quieres decir'; // Respuesta por defecto
     }
 });
